@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { BASE_URL, requests, IMAGE_URL } from "../api/TMDB";
+import { requests, IMAGE_URL } from "../api/tmdb";
 import YouTube from "react-youtube";
 import movieTrailer from "movie-trailer";
 import "./Banner.css";
@@ -11,7 +11,7 @@ export default function Banner() {
 
   useEffect(() => {
     async function fetchData() {
-      const res = await axios.get(`${BASE_URL}${requests.netflixOriginals}`);
+      const res = await axios.get(requests.netflixOriginals);
       setMovie(
         res.data.results[
         Math.floor(Math.random() * res.data.results.length)
@@ -29,16 +29,28 @@ export default function Banner() {
     },
   };
 
-  const handlePlay = () => {
+  const handlePlay = async () => {
     if (trailerUrl) {
       setTrailerUrl("");
     } else {
-      movieTrailer(movie?.name || movie?.title || movie?.original_name || "")
-        .then((url) => {
-          const urlParams = new URLSearchParams(new URL(url).search);
-          setTrailerUrl(urlParams.get("v"));
-        })
-        .catch((error) => console.log(error));
+      try {
+        const type = movie?.media_type === 'tv' || movie?.name ? 'tv' : 'movie'; // Fallback logic
+
+        const response = await axios.get("http://localhost:8080/api/video", {
+          params: { id: movie.id, type }
+        });
+
+        const videos = response.data.results;
+        const trailer = videos?.find(vid => vid.site === "YouTube" && vid.type === "Trailer") || videos?.[0];
+
+        if (trailer) {
+          setTrailerUrl(trailer.key);
+        } else {
+          console.log("No trailer found");
+        }
+      } catch (error) {
+        console.error("Error fetching trailer:", error);
+      }
     }
   };
 

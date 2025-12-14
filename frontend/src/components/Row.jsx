@@ -1,8 +1,9 @@
 import axios from "axios";
+import { IMAGE_URL } from "../api/tmdb";
 import { useEffect, useState } from "react";
 import YouTube from "react-youtube";
 import movieTrailer from "movie-trailer";
-import { BASE_URL, IMAGE_URL } from "../api/TMDB";
+
 import "./Row.css";
 
 export default function Row({ title, fetchUrl }) {
@@ -11,7 +12,7 @@ export default function Row({ title, fetchUrl }) {
 
   useEffect(() => {
     async function fetchData() {
-      const res = await axios.get(`${BASE_URL}${fetchUrl}`);
+      const res = await axios.get(fetchUrl);
       setMovies(res.data.results);
     }
     fetchData();
@@ -26,16 +27,29 @@ export default function Row({ title, fetchUrl }) {
     },
   };
 
-  const handleClick = movie => {
+  const handleClick = async (movie) => {
     if (trailerUrl) {
       setTrailerUrl("");
     } else {
-      movieTrailer(movie?.name || movie?.title || movie?.original_name || "")
-        .then(url => {
-          const urlParams = new URLSearchParams(new URL(url).search);
-          setTrailerUrl(urlParams.get("v"));
-        })
-        .catch(error => console.log(error));
+      try {
+        const isNetflixOriginal = title === "Netflix Originals";
+        const type = isNetflixOriginal || movie.media_type === 'tv' ? 'tv' : 'movie';
+
+        const response = await axios.get("http://localhost:8080/api/video", {
+          params: { id: movie.id, type }
+        });
+
+        const videos = response.data.results;
+        const trailer = videos?.find(vid => vid.site === "YouTube" && vid.type === "Trailer") || videos?.[0];
+
+        if (trailer) {
+          setTrailerUrl(trailer.key);
+        } else {
+          console.log("No trailer found");
+        }
+      } catch (error) {
+        console.error("Error fetching trailer:", error);
+      }
     }
   };
 
@@ -49,8 +63,8 @@ export default function Row({ title, fetchUrl }) {
               <img
                 key={movie.id}
                 onClick={() => handleClick(movie)}
-                className={`row_poster ${title === "NETFLIX ORIGINALS" && "row_posterLarge"}`}
-                src={`${IMAGE_URL}${title === "NETFLIX ORIGINALS" ? movie.poster_path : movie.backdrop_path
+                className={`row_poster ${title === "Netflix Originals" && "row_posterLarge"}`}
+                src={`${IMAGE_URL}${title === "Netflix Originals" ? movie.poster_path : movie.backdrop_path
                   }`}
                 alt={movie.name}
               />
