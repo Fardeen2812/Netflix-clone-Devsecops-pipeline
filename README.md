@@ -1,187 +1,142 @@
-# 🚀 Netflix Clone – End-to-End DevSecOps & AWS Microservices Project
+# 🚀 Netflix End-to-End DevSecOps Project
 
-A production-grade Netflix-style streaming platform built by incrementally evolving a working monolith into a microservices-based architecture. This project focuses on real-world system design, containerization, DevSecOps practices, and AWS-ready cloud architecture rather than just UI cloning.
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Status: Active Development](https://img.shields.io/badge/Status-Active%20Development-green)
+![Node.js](https://img.shields.io/badge/Node.js-20-43853D?style=flat&logo=node.js&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react&logoColor=black)
+![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=flat&logo=docker&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-Ready-232F3E?style=flat&logo=amazon-aws&logoColor=white)
 
----
-
-## 🎯 Project Objective
-
-To build a Netflix-like platform following modern engineering practices:
-
-* Start with a working application and identify bounded contexts.
-* Extract microservices incrementally (Strangler Fig pattern).
-* Introduce an **API Gateway (BFF)**.
-* Harden services for production reliability (networking, security).
-* Containerize using Docker best practices.
-* Prepare the entire system for a scalable AWS deployment.
+> **A production-grade, cloud-native streaming platform built to demonstrate advanced DevSecOps practices, microservices architecture, and secure infrastructure deployment.**
 
 ---
 
-## ⭐ Why This Project Stands Out
+## 📖 About The Project
 
-This repository documents the entire engineering journey and focuses on real-world patterns:
+This project is a comprehensive clone of the Netflix platform, designed not just as a UI copy but as a robust engineering showcase. It evolves a monolithic application into a scalable **Microservices Architecture**, integrating a full **DevSecOps pipeline** from the ground up.
 
-* **Incremental Migration:** Monolith to Microservices migration.
-* **Architecture:** Real API Gateway / Backend-for-Frontend (BFF) design.
-* **Containerization:** Production-grade multi-stage Docker images.
-* **Networking Hardening:** Outbound API calls with TLS stabilization, keep-alive, retries, and timeouts.
-* **Cloud Ready:** Environment-driven configuration designed for ECS Fargate and Kubernetes.
-* **Roadmap:** Clear DevSecOps and AWS architecture phases planned.
-
----
-
-## 🏗️ Current Architecture (Phase 1)
-
-The system currently runs as a decoupled stack:
-
-**Frontend (React / Vite) → API Gateway → Catalog Service → TMDB API**
+It demonstrates mastery of:
+*   **Microservices Decomposition**: Breaking down a monolith into functional services (Catalog, User, Video).
+*   **API Gateway Pattern**: Using a BFF (Backend for Frontend) to manage traffic and secure internal APIs.
+*   **Containerization & Orchestration**: Production-ready Docker setups and orchestration.
+*   **Security First**: Hardened networking, secure configurations, and planned automated security scanning.
 
 ---
 
-## 📂 Repository Structure
+## 🏗️ Architecture
 
+The application follows a modern microservices pattern, currently orchestrated locally via Docker Compose and ready for AWS ECS/EKS deployment.
+
+```mermaid
+graph TD
+    User((User))
+    
+    subgraph "Frontend Layer"
+        UI[React / Vite Frontend]
+    end
+    
+    subgraph "API Gateway / BFF"
+        Gateway[API Gateway Service :8080]
+    end
+    
+    subgraph "Microservices Layer"
+        Catalog[Catalog Service :8081]
+        UserSvc[User Service (Planned)]
+        VideoSvc[Video Service (Planned)]
+    end
+    
+    subgraph "External Providers"
+        TMDB[TMDB API]
+    end
+
+    User -->|HTTPS| UI
+    UI -->|JSON/REST| Gateway
+    Gateway -->|Private Network| Catalog
+    Gateway -->|Private Network| UserSvc
+    Gateway -->|Private Network| VideoSvc
+    Catalog -->|API Key| TMDB
+
+    style Gateway fill:#f9f,stroke:#333,stroke-width:2px
+    style Catalog fill:#bbf,stroke:#333,stroke-width:2px
 ```
-Netflix-end2end-devsecops-project/
-│
-├── frontend/                  # React Netflix-style UI
-├── services/                  # Backend microservices
-│   ├── api-gateway/           # API Gateway / BFF (Backend For Frontend)
-│   └── catalog-service/       # Content metadata service
-├── infra/                     # Infrastructure as Code (e.g., Terraform, CloudFormation) - Upcoming
-├── package.json               # Root tooling and scripts
-└── README.md                  # Project documentation
-```
-
 
 ---
 
-## 🔬 Implemented Microservices
+## 🛠️ Tech Stack
 
-### 1. Catalog Service
+### core
+*   **Frontend**: React, Vite, TailwindCSS (for styling)
+*   **Backend**: Node.js, Express
+*   **Database**: MongoDB (Mongoose)
 
-| Purpose | Endpoints |
-| :--- | :--- |
-| Fetch, cache, and serve movie/TV metadata. | `GET /health` |
-| Securely proxy the TMDB APIs. | `GET /catalog/trending` |
-| Provide content data for frontend rows. | `GET /catalog/netflix-originals` |
-| | `GET /catalog/top-rated` |
-| | `GET /catalog/action` |
-
-**Key Features:** Hardened Axios client with keep-alive, retries, and timeouts; independent runtime; Dockerized.
-
-### 2. API Gateway (BFF)
-
-| Purpose | Endpoints |
-| :--- | :--- |
-| Single entry point for the frontend. | `GET /health` |
-| Hide internal microservice topology. | `GET /api/trending` |
-| Route requests to backend services. | `GET /api/netflix-originals` |
-| Ready for authentication/authorization integration. | `GET /api/top-rated` |
-| | `GET /api/action` |
-
-**Key Features:** Environment-driven service discovery; clean API surface; container-network ready.
+### Infrastructure & DevOps
+*   **Containerization**: Docker, Docker Compose
+*   **Orchestration**: Kubernetes (Planned)
+*   **CI/CD**: Jenkins, GitHub Actions (Planned)
+*   **Security**: SonarQube, Trivy (Planned)
+*   **Monitoring**: Prometheus, Grafana (Planned)
 
 ---
 
-## 🐳 Docker & Containerization
+## ⚡ Key Features
 
-### Standard Container Practices
-
-Both services utilize the following production best practices:
-
-* **Base Image:** Node 20 Alpine.
-* **Security:** Non-root container user; no development dependencies in production.
-* **Configuration:** Runtime configuration via environment variables.
-
-### Production Hardening Implemented
-
-* TLS handshake stabilization.
-* Connection reuse with keep-alive.
-* Retry logic for transient network failures.
-* Request timeouts to prevent hanging sockets.
-* Explicit environment variable validation and defensive API Gateway behavior.
-
-> These patterns map directly to ECS Fargate and Kubernetes production environments.
-
-### Running Services Locally
-
-#### Catalog Service
-
-1.  Build the Docker image:
-    ```bash
-    docker build -t catalog-service .
-    ```
-2.  Run the container:
-    *(Note: Replace `your_tmdb_api_key` with a real key)*
-    ```bash
-    docker run -p 8081:8081 \
-      -e TMDB_API_KEY=your_tmdb_api_key \
-      catalog-service
-    ```
-
-#### API Gateway
-
-1.  Build the Docker image:
-    ```bash
-    docker build -t api-gateway .
-    ```
-2.  Run the container:
-    *(Note: `CATALOG_SERVICE_URL` uses `host.docker.internal` to access the catalog service running on the host machine's port 8081.)*
-    ```bash
-    docker run -p 8080:8080 \
-      -e CATALOG_SERVICE_URL=[http://host.docker.internal:8081](http://host.docker.internal:8081) \
-      api-gateway
-    ```
+*   **Microservices Architecture**: Independent services for Catalog and API Gateway.
+*   **Resilient Networking**: Implemented retries, timeouts, and keep-alives for internal service communication.
+*   **Production Hardening**: Non-root container users, secure environment variable handling, and refined Dockerfiles.
+*   **API Gateway**: Centralized entry point masking the complexity of the backend services.
 
 ---
 
-## 🗺️ Project Journey So Far
+## 🚀 Getting Started
 
-| Stage | Status |
-| :--- | :--- |
-| Built a Netflix-style frontend UI | ✅ |
-| Implemented a backend monolith | ✅ |
-| Identified service boundaries & Extracted Catalog Service | ✅ |
-| Introduced an API Gateway (BFF) | ✅ |
-| Resolved ES Module and environment loading issues | ✅ |
-| Dockerized services using production best practices | ✅ |
-| Hardened outbound networking for containerized environments | ✅ |
+Follow these steps to get the project running locally in minutes.
 
-### Upcoming Work
+### Prerequisites
+*   Docker & Docker Compose installed.
+*   Git installed.
+*   A [TMDB API Key](https://www.themoviedb.org/documentation/api).
 
-#### Phase 2 – Platform Expansion
-* Docker Compose for local orchestration.
-* Video / Playback Service.
-* Recommendation Service.
-* User Profile and Watchlist Service.
+### Installation
 
-#### Phase 3 – AWS Deployment (Cloud Architecture)
-* Amazon ECR for container registry.
-* ECS Fargate for serverless container execution.
-* Application Load Balancer (ALB) with path-based routing.
-* AWS API Gateway integration (optional).
-* DynamoDB for metadata and user data.
-* S3 and CloudFront for media delivery.
-* Amazon Cognito for authentication.
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/Fardeen2812/Netflix-clone-Devsecops-pipeline.git
+    cd Netflix-end2end-devsecops-project
+    ```
 
-#### Phase 4 – DevSecOps & Observability
-* Jenkins CI/CD pipelines.
-* Container and dependency security scanning.
-* Centralized logging.
-* Prometheus and Grafana monitoring.
-* IAM least-privilege enforcement.
+2.  **Configure Environment**
+    Create a `.env` file in the root directory:
+    ```bash
+    echo "TMDB_API_KEY=your_actual_api_key_here" > .env
+    ```
+
+3.  **Start Services**
+    Spin up the entire stack using Docker Compose:
+    ```bash
+    docker-compose up --build -d
+    ```
+
+4.  **Access the Application**
+    *   **Frontend**: [http://localhost:5173](http://localhost:5173) (if running locally) or accessible via Gateway.
+    *   **API Gateway**: [http://localhost:8080/health](http://localhost:8080/health)
+    *   **Catalog Service**: [http://localhost:8081/health](http://localhost:8081/health)
 
 ---
 
-## ✅ Project Status
+## 🛣️ Roadmap
 
-* **Status:** Active Development
-* **Readiness:** Architecture validated, services containerized, ready for AWS deployment.
+| Phase | Focus | Status |
+| :--- | :--- | :--- |
+| **Phase 1** | Monolith to Microservices & Dockerization | ✅ Completed |
+| **Phase 2** | Orchestration (Kubernetes/EKS) | 🚧 In Progress |
+| **Phase 3** | CI/CD Pipeline (Jenkins, ArgoCD) | 📅 Planned |
+| **Phase 4** | Observability (Prometheus/Grafana) | 📅 Planned |
 
 ---
 
 ## 👨‍💻 Author
 
- **Fardeen**
-* Cloud-Engineer / DevOps/Devsecops / AWS Solution Architect*
-* linkedin- www.linkedin.com/in/fardeen-aliii
+**Fardeen Ali**
+*Cloud Engineer | DevOps Enthusiast | AWS Solutions Architect*
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat&logo=linkedin)](https://www.linkedin.com/in/fardeen-aliii)
