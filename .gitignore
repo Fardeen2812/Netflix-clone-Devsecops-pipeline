@@ -31,3 +31,9 @@ yarn-error.log*
 
 # Optional: Ignore backend uploads if any
 uploads/
+
+# Terraform files
+*.tfstate
+*.tfstate.backup
+.terraform/
+

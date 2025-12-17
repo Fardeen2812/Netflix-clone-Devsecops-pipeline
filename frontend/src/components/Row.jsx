@@ -1,77 +1,59 @@
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { IMAGE_URL } from "../api/tmdb";
-import { useEffect, useState } from "react";
-import YouTube from "react-youtube";
-import movieTrailer from "movie-trailer";
-
 import "./Row.css";
 
-export default function Row({ title, fetchUrl }) {
+const Row = ({ title, fetchUrl, isLargeRow = false }) => {
   const [movies, setMovies] = useState([]);
-  const [trailerUrl, setTrailerUrl] = useState("");
 
   useEffect(() => {
-    async function fetchData() {
-      const res = await axios.get(fetchUrl);
-      setMovies(res.data.results);
-    }
-    fetchData();
-  }, [fetchUrl]);
+    let isMounted = true;
 
-  const opts = {
-    height: "390",
-    width: "100%",
-    playerVars: {
-      // https://developers.google.com/youtube/player_parameters
-      autoplay: 1,
-    },
-  };
-
-  const handleClick = async (movie) => {
-    if (trailerUrl) {
-      setTrailerUrl("");
-    } else {
+    const fetchData = async () => {
       try {
-        const isNetflixOriginal = title === "Netflix Originals";
-        const type = isNetflixOriginal || movie.media_type === 'tv' ? 'tv' : 'movie';
+        const request = await axios.get(fetchUrl);
 
-        const response = await axios.get("http://localhost:8080/api/video", {
-          params: { id: movie.id, type }
-        });
-
-        const videos = response.data.results;
-        const trailer = videos?.find(vid => vid.site === "YouTube" && vid.type === "Trailer") || videos?.[0];
-
-        if (trailer) {
-          setTrailerUrl(trailer.key);
+        if (isMounted && request?.data?.results) {
+          setMovies(request.data.results);
         } else {
-          console.log("No trailer found");
+          setMovies([]);
         }
       } catch (error) {
-        console.error("Error fetching trailer:", error);
+        console.error("API fetch failed:", error.message);
+        setMovies([]);
       }
-    }
-  };
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchUrl]);
 
   return (
     <div className="row">
       <h2>{title}</h2>
-      <div className="row_posters">
-        {movies.map(
-          movie =>
-            movie.poster_path && (
-              <img
-                key={movie.id}
-                onClick={() => handleClick(movie)}
-                className={`row_poster ${title === "Netflix Originals" && "row_posterLarge"}`}
-                src={`${IMAGE_URL}${title === "Netflix Originals" ? movie.poster_path : movie.backdrop_path
-                  }`}
-                alt={movie.name}
-              />
-            )
+
+      <div className="row__posters">
+        {movies.length > 0 ? (
+          movies.map((movie) => (
+            <img
+              key={movie.id}
+              className={`row__poster ${isLargeRow && "row__posterLarge"
+                }`}
+              src={`https://image.tmdb.org/t/p/w500${isLargeRow ? movie.poster_path : movie.backdrop_path
+                }`}
+              alt={movie.name || movie.title}
+            />
+          ))
+        ) : (
+          <p style={{ color: "#999", fontSize: "14px" }}>
+            Content unavailable
+          </p>
         )}
       </div>
-      {trailerUrl && <YouTube videoId={trailerUrl} opts={opts} />}
     </div>
   );
-}
+};
+
+export default Row;
