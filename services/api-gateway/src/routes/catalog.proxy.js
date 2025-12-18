@@ -3,7 +3,8 @@ import axios from "axios";
 
 const router = express.Router();
 
-router.get("/trending", async (req, res) => {
+// Generic proxy for all catalog routes
+router.use("/", async (req, res) => {
   try {
     const baseUrl = process.env.CATALOG_SERVICE_URL?.trim();
 
@@ -13,14 +14,23 @@ router.get("/trending", async (req, res) => {
         .json({ error: "CATALOG_SERVICE_URL not configured" });
     }
 
-    const response = await axios.get(
-      `${baseUrl}/catalog/trending`
-    );
+    // req.path will be "/trending", "/netflix-originals", etc.
+    // because this router is mounted at "/api" in server.js
+    const targetUrl = `${baseUrl}/catalog${req.path}`;
+
+    // Forward query parameters
+    const response = await axios.get(targetUrl, {
+      params: req.query
+    });
 
     res.json(response.data);
   } catch (err) {
-    console.error("Gateway → Catalog error:", err.message);
-    res.status(502).json({ error: "Catalog service unavailable" });
+    console.error(`Gateway proxy error for ${req.path}:`, err.message);
+    if (err.response) {
+      res.status(err.response.status).json(err.response.data);
+    } else {
+      res.status(502).json({ error: "Catalog service unavailable" });
+    }
   }
 });
 

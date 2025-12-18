@@ -158,4 +158,40 @@ router.get("/action", async (req, res) => {
   }
 });
 
+/**
+ * -----------------------------
+ * /catalog/video
+ * Fetch trailer/video for a movie
+ * -----------------------------
+ */
+router.get("/video", async (req, res) => {
+  try {
+    const apiKey = process.env.TMDB_API_KEY;
+    const { id, type } = req.query; // type = 'movie' or 'tv'
+
+    if (!apiKey) {
+      return res.status(500).json({ error: "TMDB_API_KEY not configured" });
+    }
+    if (!id) {
+      return res.status(400).json({ error: "Missing movie/tv ID" });
+    }
+
+    const endpoint = type === "tv" ? `/tv/${id}/videos` : `/movie/${id}/videos`;
+
+    const response = await fetchWithRetry(() =>
+      tmdbClient.get(endpoint, {
+        params: { api_key: apiKey }
+      })
+    );
+
+    // Return the list of videos
+    // Frontend expects { results: [...] } or just the array? 
+    // Usually TMDB returns { id, results: [] }
+    res.json(response.data);
+  } catch (err) {
+    console.error("Catalog video error:", err.message);
+    res.status(502).json({ error: "Failed to fetch video" });
+  }
+});
+
 export default router;

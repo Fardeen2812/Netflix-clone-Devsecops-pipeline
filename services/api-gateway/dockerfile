@@ -1,7 +1,9 @@
 # Base Image
-FROM node:20-alpine
+# Base Image
+FROM --platform=linux/amd64 node:20
 # Set working directory
 WORKDIR /app
+RUN echo "Force Rebuild Debian" > /rebuild_marker
 # Copy package files and install dependencies
 COPY package*.json ./
 # install dependencies

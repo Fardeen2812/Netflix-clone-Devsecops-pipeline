@@ -17,3 +17,9 @@ variable "vpc_cidr" {
     default     = "10.0.0.0/16"
   
 }
+variable "tmdb_api_key" {
+  description = "TMDB API Key"
+  type        = string
+  sensitive   = true
+}
+

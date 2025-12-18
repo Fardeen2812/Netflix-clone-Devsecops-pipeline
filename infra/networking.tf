@@ -80,11 +80,20 @@ resource "aws_security_group" "ecs_sg" {
   vpc_id      = aws_vpc.my_vpc.id   
 
     ingress {
-        from_port       = 80
-        to_port         = 80
+        from_port       = 8080
+        to_port         = 8081
         protocol        = "tcp"
         security_groups = [aws_security_group.alb_sg.id]
     }
+
+    # Allow inter-service communication (optional but recommended if services talk to each other)
+    ingress {
+        from_port = 0
+        to_port   = 0
+        protocol  = "-1"
+        self      = true
+    }
+
     egress {
         from_port   = 0
         to_port     = 0

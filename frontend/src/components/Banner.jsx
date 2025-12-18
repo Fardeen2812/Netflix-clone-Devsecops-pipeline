@@ -36,7 +36,7 @@ export default function Banner() {
       try {
         const type = movie?.media_type === 'tv' || movie?.name ? 'tv' : 'movie'; // Fallback logic
 
-        const response = await axios.get("http://localhost:8080/api/video", {
+        const response = await axios.get("/api/video", {
           params: { id: movie.id, type }
         });
 

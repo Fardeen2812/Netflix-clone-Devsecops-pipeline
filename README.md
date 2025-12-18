@@ -25,65 +25,84 @@ It demonstrates mastery of:
 
 ## 🏗️ Architecture
 
-The application follows a modern microservices pattern, currently orchestrated locally via Docker Compose and ready for AWS ECS/EKS deployment.
+The application is deployed on AWS using ECS Fargate, CloudFront, and Application Load Balancers.
 
-```mermaid
-graph TD
-    User((User))
-    
-    subgraph "Frontend Layer"
-        UI[React / Vite Frontend]
-    end
-    
-    subgraph "API Gateway / BFF"
-        Gateway[API Gateway Service :8080]
-    end
-    
-    subgraph "Microservices Layer"
-        Catalog[Catalog Service :8081]
-        UserSvc[User Service (Planned)]
-        VideoSvc[Video Service (Planned)]
-    end
-    
-    subgraph "External Providers"
-        TMDB[TMDB API]
-    end
+![AWS Architecture Diagram](./docs/architecture.png)
 
-    User -->|HTTPS| UI
-    UI -->|JSON/REST| Gateway
-    Gateway -->|Private Network| Catalog
-    Gateway -->|Private Network| UserSvc
-    Gateway -->|Private Network| VideoSvc
-    Catalog -->|API Key| TMDB
+---
 
-    style Gateway fill:#f9f,stroke:#333,stroke-width:2px
-    style Catalog fill:#bbf,stroke:#333,stroke-width:2px
+## 📸 Screenshots & Artifacts
+
+### Home Page (Netflix Originals & Trending)
+![Home Page](./docs/home_page.png)
+
+### Video Playback (Integration with Backend Proxy)
+![Video Playback](./docs/video_playback.png)
+
+---
+
+## 📂 Directory Structure
+
+```text
+├── frontend/                # React Vite Frontend
+│   ├── src/
+│   ├── Dockerfile
+│   └── dist/                # Production build artifacts
+├── services/                # Microservices
+│   ├── api-gateway/         # Node.js API Gateway (BFF)
+│   ├── catalog-service/     # Movie Catalog Service
+│   └── user-service/        # (Planned) User Management
+├── infra/                   # Terraform Infrastructure Code
+│   ├── alb.tf               # Load Balancer Config
+│   ├── ecs.tf               # ECS Cluster & Tasks
+│   ├── cloudfront.tf        # CDN Configuration
+│   └── networking.tf        # VPC, Subnets, Security Groups
+├── docker-compose.yml       # Local Development Orchestration
+└── README.md                # Project Documentation
 ```
+
+---
+
+## 🔧 Engineering Journey & Troubleshooting
+
+Building this project involved solving complex real-world infrastructure challenges. Here is a summary of the key technical hurdles overcome:
+
+### 1. The "504 Gateway Timeout" Outage
+**Issue**: The ALB could not reach the ECS tasks, causing timeouts.
+**Root Cause**: Security Group misconfiguration. The ECS Security Group allowed ingress on Port 80, but the Node.js containers were listening on Port 8080.
+**Fix**: Updated Terraform `networking.tf` to allow ingress on Port 8080 from the ALB.
+
+### 2. The "Exec Format Error" (Architecture Mismatch)
+**Issue**: ECS tasks crashed immediately upon startup with `exec /usr/local/bin/docker-entrypoint.sh: exec format error`.
+**Root Cause**: Docker images were built on an Apple M1 (ARM64) machine, but Fargate runs on x86_64 (AMD64).
+**Fix**:
+*   Implemented `docker buildx` for multi-platform builds.
+*   Added `.dockerignore` to exclude local `node_modules` (ARM64 binaries) from corrupting the container build context.
+
+### 3. The "Sticky Deployment" (Stale Cache)
+**Issue**: Even after pushing fixed images, ECS continued to run the old, broken code.
+**Root Cause**: ECS aggressively caches the `latest` image tag.
+**Fix**: Implemented immutable image tagging (e.g., `api-gateway:v4`) and explicitly updated the ECS Task Definitions to force a fresh pull of the new code.
+
+### 4. Frontend Layout & Playback
+**Issue**: Vertical scrolling bugs and missing video playback.
+**Fix**: Debugged CSS Flexbox issues and implemented a backend proxy in the API Gateway to securely fetch video trailers from TMDB without exposing Keys to the client.
 
 ---
 
 ## 🛠️ Tech Stack
 
-### core
+### Core
 *   **Frontend**: React, Vite, TailwindCSS (for styling)
 *   **Backend**: Node.js, Express
 *   **Database**: MongoDB (Mongoose)
 
 ### Infrastructure & DevOps
-*   **Containerization**: Docker, Docker Compose
-*   **Orchestration**: Kubernetes (Planned)
-*   **CI/CD**: Jenkins, GitHub Actions (Planned)
-*   **Security**: SonarQube, Trivy (Planned)
-*   **Monitoring**: Prometheus, Grafana (Planned)
-
----
-
-## ⚡ Key Features
-
-*   **Microservices Architecture**: Independent services for Catalog and API Gateway.
-*   **Resilient Networking**: Implemented retries, timeouts, and keep-alives for internal service communication.
-*   **Production Hardening**: Non-root container users, secure environment variable handling, and refined Dockerfiles.
-*   **API Gateway**: Centralized entry point masking the complexity of the backend services.
+*   **Compute**: AWS ECS Fargate
+*   **Networking**: AWS ALB, CloudFront, VPC
+*   **IaC**: Terraform
+*   **Containerization**: Docker, Docker Buildx
+*   **CI/CD**: GitHub Actions (Planned)
 
 ---
 
@@ -119,18 +138,6 @@ Follow these steps to get the project running locally in minutes.
 4.  **Access the Application**
     *   **Frontend**: [http://localhost:5173](http://localhost:5173) (if running locally) or accessible via Gateway.
     *   **API Gateway**: [http://localhost:8080/health](http://localhost:8080/health)
-    *   **Catalog Service**: [http://localhost:8081/health](http://localhost:8081/health)
-
----
-
-## 🛣️ Roadmap
-
-| Phase | Focus | Status |
-| :--- | :--- | :--- |
-| **Phase 1** | Monolith to Microservices & Dockerization | ✅ Completed |
-| **Phase 2** | Orchestration (Kubernetes/EKS) | 🚧 In Progress |
-| **Phase 3** | CI/CD Pipeline (Jenkins, ArgoCD) | 📅 Planned |
-| **Phase 4** | Observability (Prometheus/Grafana) | 📅 Planned |
 
 ---
 
