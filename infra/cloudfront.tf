@@ -1,8 +1,16 @@
+resource "aws_cloudfront_origin_access_control" "frontend" {
+  name                              = "frontend-oac-${var.project_name}"
+  description                       = "OAC for frontend S3 bucket"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
 resource "aws_cloudfront_distribution" "frontend" {
   origin {
-    domain_name              = "netflix-frontend-fardeen.s3.us-east-1.amazonaws.com"
-    origin_id                = "netflix-frontend-fardeen.s3.us-east-1.amazonaws.com-mj8ba2quaiu"
-    origin_access_control_id = "E168FSIX317N7W" # Hardcoded from existing
+    domain_name              = aws_s3_bucket.frontend_bucket.bucket_regional_domain_name
+    origin_id                = aws_s3_bucket.frontend_bucket.id
+    origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
     connection_attempts      = 3
     connection_timeout       = 10
 
@@ -61,7 +69,7 @@ resource "aws_cloudfront_distribution" "frontend" {
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "netflix-frontend-fardeen.s3.us-east-1.amazonaws.com-mj8ba2quaiu"
+    target_origin_id = aws_s3_bucket.frontend_bucket.id
 
     viewer_protocol_policy = "redirect-to-https"
     compress               = true

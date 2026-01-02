@@ -10,6 +10,7 @@ resource "aws_ecr_repository" "catalog_service" {
         Name = "catalog-service"
         project = var.project_name
     }
+    force_delete = true
 }
 
 resource "aws_ecr_repository" "api_gateway" {
@@ -25,4 +26,21 @@ resource "aws_ecr_repository" "api_gateway" {
         Name = "api-gateway"
         project = var.project_name
     }
+    force_delete = true
+}
+
+resource "aws_ecr_repository" "jenkins" {
+    name = "jenkins"
+
+    image_scanning_configuration {
+        scan_on_push = true
+    }
+
+    image_tag_mutability = "MUTABLE"
+
+    tags = {
+        Name = "jenkins"
+        project = var.project_name
+    }
+    force_delete = true
 }
