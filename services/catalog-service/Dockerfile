@@ -9,6 +9,8 @@ COPY . .
 RUN rm -f package-lock.json && rm -rf node_modules
 RUN npm install
 RUN ls -la node_modules
+RUN npm list express || echo "Express missing!"
+RUN cat package.json
 
 # Ensure permissions
 RUN chown -R node:node /app
