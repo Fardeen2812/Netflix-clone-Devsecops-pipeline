@@ -20,7 +20,7 @@ pipeline {
                     sh """
                     /usr/bin/kaniko \\
                     --context ./services/catalog-service \\
-                    --dockerfile ./services/catalog-service/Dockerfile \\
+                    --dockerfile Dockerfile \\
                     --destination ${ECR_REPOSITORY}/catalog-service:latest \\
                     --force
                     """
@@ -34,7 +34,7 @@ pipeline {
                     sh """
                     /usr/bin/kaniko \\
                     --context ./services/api-gateway \\
-                    --dockerfile ./services/api-gateway/Dockerfile \\
+                    --dockerfile Dockerfile \\
                     --destination ${ECR_REPOSITORY}/api-gateway:latest \\
                     --force
                     """
