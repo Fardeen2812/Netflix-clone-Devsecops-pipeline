@@ -14,57 +14,45 @@ pipeline {
             }
         }
 
-        stage('Authenticate to ECR') {
+        stage('Build and Push catalog-service') {
             steps {
-                script {
-                   withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
-                        sh '''
-                        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPOSITORY}
-                        '''
-                   }    
+                withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
+                    sh """
+                    /usr/bin/kaniko \\
+                    --context ./services/catalog-service \\
+                    --dockerfile ./services/catalog-service/Dockerfile \\
+                    --destination ${ECR_REPOSITORY}/catalog-service:latest \\
+                    --force
+                    """
                 }
             }
         }
 
-        stage('Build catalog-service') {
+        stage('Build and Push api-gateway') {
             steps {
-                sh """
-                docker build \\
-                --platform linux/amd64 \\
-                -t ${ECR_REPOSITORY}/catalog-service:latest \\
-                ./services/catalog-service
-                """
-            }
-        }
-
-        stage('Build api-gateway') {
-            steps {
-                sh """
-                docker build \\
-                --platform linux/amd64 \\
-                -t ${ECR_REPOSITORY}/api-gateway:latest \\
-                ./services/api-gateway
-                """
+                withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
+                    sh """
+                    /usr/bin/kaniko \\
+                    --context ./services/api-gateway \\
+                    --dockerfile ./services/api-gateway/Dockerfile \\
+                    --destination ${ECR_REPOSITORY}/api-gateway:latest \\
+                    --force
+                    """
+                }
             }
         }
 
         stage('Trivy Scan') {
             steps {
-                sh """
-                trivy image --severity HIGH,CRITICAL --exit-code 0 ${ECR_REPOSITORY}/catalog-service:latest
-                trivy image --severity HIGH,CRITICAL --exit-code 0 ${ECR_REPOSITORY}/api-gateway:latest
-                """
+                // Scan the REMOTE image in ECR (since we don't have a local daemon)
+                withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
+                    sh """
+                    trivy image --severity HIGH,CRITICAL --exit-code 0 ${ECR_REPOSITORY}/catalog-service:latest
+                    trivy image --severity HIGH,CRITICAL --exit-code 0 ${ECR_REPOSITORY}/api-gateway:latest
+                    """
+                }
             }
         }   
-
-        stage('Push Images') {
-            steps {
-                sh """
-                docker push ${ECR_REPOSITORY}/catalog-service:latest
-                docker push ${ECR_REPOSITORY}/api-gateway:latest
-                """         
-            }
-        }
 
         stage('Deploy to ECS') {
             steps {
