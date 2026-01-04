@@ -28,7 +28,7 @@ pipeline {
                     --context . \\
                     --dockerfile Dockerfile \\
                     --destination ${ECR_REPOSITORY}/catalog-service:latest \
-                    --cache=false \\
+                    --cache=false \
                     --force
                     """
                 }
@@ -45,7 +45,7 @@ pipeline {
                     --context . \\
                     --dockerfile Dockerfile \\
                     --destination ${ECR_REPOSITORY}/api-gateway:latest \
-                    --cache=false \\
+                    --cache=false \
                     --force
                     """
                 }
