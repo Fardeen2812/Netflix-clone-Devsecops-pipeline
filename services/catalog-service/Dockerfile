@@ -2,18 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+# Copy all files first (including potential local node_modules)
+COPY . .
 
-COPY package*.json ./
-
-RUN rm -f package-lock.json
+# Clean up any existing modules and install fresh
+RUN rm -f package-lock.json && rm -rf node_modules
 RUN npm install
 RUN ls -la node_modules
 
-COPY . .
-
-COPY . .
-
+# Ensure permissions
 RUN chown -R node:node /app
 
 USER node
