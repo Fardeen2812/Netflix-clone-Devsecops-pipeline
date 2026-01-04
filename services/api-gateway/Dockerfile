@@ -7,7 +7,11 @@ RUN echo "Force Rebuild Debian" > /rebuild_marker
 # Copy package files and install dependencies
 COPY package*.json ./
 # install dependencies
+COPY package*.json ./
+
+RUN rm -f package-lock.json
 RUN npm install
+RUN ls -la node_modules
 # Copy application code
 COPY . .
 # Use non-root user
