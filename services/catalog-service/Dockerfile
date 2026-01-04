@@ -12,6 +12,10 @@ RUN ls -la node_modules
 
 COPY . .
 
+COPY . .
+
+RUN chown -R node:node /app
+
 USER node
 
 EXPOSE 8081

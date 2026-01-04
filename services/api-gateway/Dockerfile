@@ -15,6 +15,10 @@ RUN ls -la node_modules
 # Copy application code
 COPY . .
 # Use non-root user
+COPY . .
+
+RUN chown -R node:node /app
+
 USER node
 # Expose application port
 EXPOSE 8080

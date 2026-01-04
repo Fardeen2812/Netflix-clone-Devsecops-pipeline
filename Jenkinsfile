@@ -27,7 +27,8 @@ pipeline {
                     /usr/bin/kaniko \\
                     --context . \\
                     --dockerfile Dockerfile \\
-                    --destination ${ECR_REPOSITORY}/catalog-service:latest \\
+                    --destination ${ECR_REPOSITORY}/catalog-service:latest \
+                    --cache=false \\
                     --force
                     """
                 }
@@ -43,7 +44,8 @@ pipeline {
                     /usr/bin/kaniko \\
                     --context . \\
                     --dockerfile Dockerfile \\
-                    --destination ${ECR_REPOSITORY}/api-gateway:latest \\
+                    --destination ${ECR_REPOSITORY}/api-gateway:latest \
+                    --cache=false \\
                     --force
                     """
                 }
