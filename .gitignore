@@ -37,3 +37,4 @@ uploads/
 *.tfstate.backup
 .terraform/
 .terraform.tfvars
+.jenkinsfile.bak    

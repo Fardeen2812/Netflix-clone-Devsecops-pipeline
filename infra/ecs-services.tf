@@ -2,7 +2,7 @@ resource "aws_ecs_service" "catalog" {
     name            = "${var.project_name}-catalog-service"
     cluster         = aws_ecs_cluster.my-project.id
     task_definition = aws_ecs_task_definition.catalog.arn
-    desired_count   = 0
+    desired_count   = 1
     launch_type     = "FARGATE"
     
     network_configuration {
@@ -28,7 +28,7 @@ resource "aws_ecs_service" "api_gateway" {
     name            = "${var.project_name}-api-gateway-service"
     cluster         = aws_ecs_cluster.my-project.id
     task_definition = aws_ecs_task_definition.api_gateway.arn
-    desired_count   = 0
+    desired_count   = 1
     launch_type     = "FARGATE"
     
     network_configuration {

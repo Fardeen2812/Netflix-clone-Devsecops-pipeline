@@ -1,4 +1,7 @@
+FROM gcr.io/kaniko-project/executor:v1.23.2-debug AS kaniko
 FROM jenkins/jenkins:lts
+COPY --from=kaniko /kaniko/executor /usr/bin/kaniko
+
 USER root
 
 # Install prerequisites
@@ -26,7 +29,16 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 # Install Trivy
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
 
-# Clean up
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Create workspace for Kaniko
+RUN mkdir -p /kaniko && chmod 777 /kaniko
 
-USER jenkins
+# Fix Git ownership issue (Workspace owned by jenkins, running as root)
+# Apply to SYSTEM config so it works for ALL users
+RUN git config --system --add safe.directory '*'
+
+# Ensure Jenkins home permissions are correct for root
+# (Note: Volume mount might override this at runtime, but good to have)
+RUN chown -R root:root /var/jenkins_home || true
+
+# Run as root for Kaniko compatibility
+# USER jenkins
