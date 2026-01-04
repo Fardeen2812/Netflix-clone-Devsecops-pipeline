@@ -64,11 +64,11 @@ pipeline {
                     sh """
                     aws ecs update-service \\
                      --cluster netflix-cluster \\
-                     --service catalog-service \\
+                     --service netflix-catalog-service \\
                      --force-new-deployment
                     aws ecs update-service \\
                      --cluster netflix-cluster \\
-                     --service api-gateway \\
+                     --service netflix-api-gateway-service \\
                      --force-new-deployment
                     """
                 }
