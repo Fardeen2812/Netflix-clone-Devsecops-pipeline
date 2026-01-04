@@ -18,9 +18,9 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
                     sh """
+                    cd ./services/catalog-service && \\
                     /usr/bin/kaniko \\
-                    --context ./services/catalog-service \\
-                    --dockerfile Dockerfile \\
+                    --context . \\
                     --destination ${ECR_REPOSITORY}/catalog-service:latest \\
                     --force
                     """
@@ -32,9 +32,9 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
                     sh """
+                    cd ./services/api-gateway && \\
                     /usr/bin/kaniko \\
-                    --context ./services/api-gateway \\
-                    --dockerfile Dockerfile \\
+                    --context . \\
                     --destination ${ECR_REPOSITORY}/api-gateway:latest \\
                     --force
                     """
