@@ -7,6 +7,10 @@ pipeline {
         ECR_REPOSITORY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
     }
 
+    triggers {
+        githubPush()
+    }
+
     stages {
         stage('Build') {
             steps {
