@@ -14,7 +14,11 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                checkout scm    
+                checkout scm
+                script {
+                    env.IMAGE_TAG = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                    echo "Image Tag set to: ${env.IMAGE_TAG}"
+                }
             }
         }
 
@@ -28,6 +32,7 @@ pipeline {
                     --context . \\
                     --dockerfile Dockerfile \\
                     --destination ${ECR_REPOSITORY}/catalog-service:latest \
+                    --destination ${ECR_REPOSITORY}/catalog-service:${env.IMAGE_TAG} \
                     --cache=false \
                     --force
                     """
@@ -45,6 +50,7 @@ pipeline {
                     --context . \\
                     --dockerfile Dockerfile \\
                     --destination ${ECR_REPOSITORY}/api-gateway:latest \
+                    --destination ${ECR_REPOSITORY}/api-gateway:${env.IMAGE_TAG} \
                     --cache=false \
                     --force
                     """
@@ -57,8 +63,8 @@ pipeline {
                 // Scan the REMOTE image in ECR (since we don't have a local daemon)
                 withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
                     sh """
-                    trivy image --severity HIGH,CRITICAL --exit-code 0 ${ECR_REPOSITORY}/catalog-service:latest
-                    trivy image --severity HIGH,CRITICAL --exit-code 0 ${ECR_REPOSITORY}/api-gateway:latest
+                    trivy image --severity HIGH,CRITICAL --exit-code 1 ${ECR_REPOSITORY}/catalog-service:${env.IMAGE_TAG}
+                    trivy image --severity HIGH,CRITICAL --exit-code 1 ${ECR_REPOSITORY}/api-gateway:${env.IMAGE_TAG}
                     """
                 }
             }
