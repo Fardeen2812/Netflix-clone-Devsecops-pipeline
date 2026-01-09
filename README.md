@@ -88,6 +88,33 @@ Building this project involved solving complex real-world infrastructure challen
 **Issue**: Vertical scrolling bugs and missing video playback.
 **Fix**: Debugged CSS Flexbox issues and implemented a backend proxy in the API Gateway to securely fetch video trailers from TMDB without exposing Keys to the client.
 
+### 5. CI/CD Pipeline & Security Hardening
+**Issue**: Jenkins builds failed due to `TargetNotConnectedException` (ECS Exec), workspace corruption, and `npm` conflicts during security patching.
+**Root Cause**:
+*   Missing IAM permissions for ECS Exec.
+*   Corrupted git objects on EFS persistent storage.
+*   Conflict between local `node_modules` and global `npm` update in Docker build.
+**Fix**:
+*   Added `ssmmessages` permissions to IAM role.
+*   Performed remote workspace wipe via `ecs execute-command`.
+*   Restructured multi-stage Dockerfiles to update `npm` in a clean layer before copying application code.
+
+---
+
+## 🚀 Jenkins CI/CD Pipeline Implementation
+
+We successfully implemented a robust CI/CD pipeline using Jenkins on AWS Fargate.
+
+### Pipeline Success
+The pipeline handles Checkout, Docker Build/Push (Kaniko), Trivy Security Scanning, and Deployment to ECS.
+
+![Jenkins Pipeline Success](./assets/jenkins_pipeline_success.png)
+
+### ECS Cluster Status
+Services are stable and running with the latest secure images.
+
+![ECS Cluster Status](./assets/ecs_cluster_status.png)
+
 ---
 
 ## 🛠️ Tech Stack
@@ -102,7 +129,7 @@ Building this project involved solving complex real-world infrastructure challen
 *   **Networking**: AWS ALB, CloudFront, VPC
 *   **IaC**: Terraform
 *   **Containerization**: Docker, Docker Buildx
-*   **CI/CD**: GitHub Actions (Planned)
+*   **CI/CD**: Jenkins (ECS Fargate Agents), Kaniko, Trivy Security Scanning
 
 ---
 
@@ -144,6 +171,6 @@ Follow these steps to get the project running locally in minutes.
 ## 👨‍💻 Author
 
 **Fardeen Ali**
-*Cloud Engineer | DevOps Enthusiast | AWS Solutions Architect*
+*Cloud Engineer | DevOps Engineer | AWS Solutions Architect*
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat&logo=linkedin)](https://www.linkedin.com/in/fardeen-aliii)
