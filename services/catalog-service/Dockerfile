@@ -2,12 +2,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy all files first (including potential local node_modules)
+# Upgrade npm in a clean environment first
+RUN npm install -g npm@latest
+
+# Copy all files (node_modules is excluded via .dockerignore)
 COPY . .
 
-# Clean up any existing modules and install fresh
-RUN rm -f package-lock.json && rm -rf node_modules
-RUN npm install -g npm@latest
+# Install fresh dependencies
 RUN npm install
 RUN ls -la node_modules
 RUN npm list express || echo "Express missing!"
