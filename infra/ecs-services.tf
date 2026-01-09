@@ -30,6 +30,11 @@ resource "aws_ecs_service" "api_gateway" {
     task_definition = aws_ecs_task_definition.api_gateway.arn
     desired_count   = 1
     launch_type     = "FARGATE"
+
+    deployment_circuit_breaker {
+        enable = true
+        rollback = true
+    }
     
     network_configuration {
         subnets         = aws_subnet.public_subnet[*].id
