@@ -6,8 +6,8 @@ WORKDIR /app
 COPY . .
 
 # Clean up any existing modules and install fresh
-RUN npm install -g npm@latest
 RUN rm -f package-lock.json && rm -rf node_modules
+RUN npm install -g npm@latest
 RUN npm install
 RUN ls -la node_modules
 RUN npm list express || echo "Express missing!"
