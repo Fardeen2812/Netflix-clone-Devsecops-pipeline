@@ -1,9 +1,6 @@
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
-
-# Upgrade npm in a clean environment first
-RUN npm install -g npm@latest
 
 # Copy all files (node_modules is excluded via .dockerignore)
 COPY . .
