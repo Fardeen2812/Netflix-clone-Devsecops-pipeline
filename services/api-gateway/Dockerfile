@@ -5,7 +5,8 @@ WORKDIR /app
 # Copy all files (node_modules is excluded via .dockerignore)
 COPY . .
 
-# Install fresh dependencies
+# Remove potential incompatible lockfile and install fresh dependencies
+RUN rm package-lock.json
 RUN npm install
 RUN ls -la node_modules
 
